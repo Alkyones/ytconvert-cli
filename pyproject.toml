@@ -1,0 +1,129 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ytconvert-cli"
+version = "1.0.0"
+description = "A command-line tool to convert YouTube videos to MP3 or MP4 using yt-dlp"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "ytconvert-cli contributors"}
+]
+keywords = [
+    "youtube",
+    "converter",
+    "mp3",
+    "mp4",
+    "yt-dlp",
+    "cli",
+    "video",
+    "audio",
+    "download",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "yt-dlp>=2024.1.0",
+    "typer>=0.9.0",
+    "typing-extensions>=4.0.0",
+    "imageio-ffmpeg>=0.4.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+]
+
+[project.scripts]
+ytconvert = "ytconvert.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/ytconvert-cli"
+Documentation = "https://github.com/yourusername/ytconvert-cli#readme"
+Repository = "https://github.com/yourusername/ytconvert-cli"
+Issues = "https://github.com/yourusername/ytconvert-cli/issues"
+Changelog = "https://github.com/yourusername/ytconvert-cli/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ytconvert"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/ytconvert",
+    "/README.md",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without explicit strict parameter
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ytconvert"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "yt_dlp.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["ytconvert"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
