@@ -5,7 +5,9 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ytconvert-cli.svg)](https://pypi.org/project/ytconvert-cli/)
 
-**PyPI:** [ytconvert-cli 1.0.0](https://pypi.org/project/ytconvert-cli/1.0.0/)
+**PyPI:** [ytconvert-cli 1.0.1](https://pypi.org/project/ytconvert-cli/1.0.0/)
+
+**Github:** [click here!](https://github.com/Alkyones/ytconvert-cli)
 
 [![PyPI version](https://img.shields.io/pypi/v/ytconvert-cli.svg)](https://pypi.org/project/ytconvert-cli/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -37,7 +39,9 @@ pip install ytconvert-cli
 ### From source
 
 ```bash
-git clone https://github.com/yourusername/ytconvert-cli.git
+Fork https://github.com/Alkyones/ytconvert-cli
+
+git clone https://github.com/Yourusername/ytconvert-cli
 cd ytconvert-cli
 pip install .
 ```
