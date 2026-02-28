@@ -148,7 +148,7 @@ ytconvert-cli/
 │   ├── cli.py           # CLI entry point
 │   ├── converter.py     # yt-dlp logic
 │   ├── validators.py    # URL/format validation
-│   ├── exceptions.py    # Custom exceptions
+**PyPI:** [ytconvert-cli 1.0.2](https://pypi.org/project/ytconvert-cli/1.0.2/)
 │   └── utils.py         # Utilities
 ├── pyproject.toml       # Packaging config
 ├── README.md            # This file

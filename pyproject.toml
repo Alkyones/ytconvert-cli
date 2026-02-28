@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ytconvert-cli"
-version = "1.0.1"
+version = "1.0.2"
 description = "A command-line tool to convert YouTube videos to MP3 or MP4 using yt-dlp"
 readme = "README.md"
 license = {text = "MIT"}
@@ -59,11 +59,11 @@ dev = [
 ytconvert = "ytconvert.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/ytconvert-cli"
-Documentation = "https://github.com/yourusername/ytconvert-cli#readme"
-Repository = "https://github.com/yourusername/ytconvert-cli"
-Issues = "https://github.com/yourusername/ytconvert-cli/issues"
-Changelog = "https://github.com/yourusername/ytconvert-cli/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Alkyones/ytconvert-cli"
+Documentation = "https://github.com/Alkyones/ytconvert-cli#readme"
+Repository = "https://github.com/Alkyones/ytconvert-cli"
+Issues = "https://github.com/Alkyones/ytconvert-cli/issues"
+Changelog = "https://github.com/Alkyones/ytconvert-cli/releases/tag/release"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ytconvert"]
