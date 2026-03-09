@@ -221,6 +221,89 @@ class YouTubeConverter:
             raise DownloadError(f"Failed to get video info: {error_msg}")
         except Exception as e:
             raise UnexpectedError(f"Unexpected error getting video info: {e}")
+
+    @staticmethod
+    def parse_search_results(entries: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+        """
+        Normalize yt-dlp search entries for CLI consumption.
+
+        Args:
+            entries: Raw entries returned by yt-dlp search
+
+        Returns:
+            List of dictionaries with normalized search metadata
+        """
+        normalized_results: list[dict[str, Any]] = []
+
+        for entry in entries or []:
+            if not entry:
+                continue
+
+            video_id = entry.get("id")
+            webpage_url = entry.get("webpage_url")
+            if not webpage_url and video_id:
+                webpage_url = f"https://www.youtube.com/watch?v={video_id}"
+
+            if not webpage_url:
+                continue
+
+            normalized_results.append(
+                {
+                    "id": video_id,
+                    "title": entry.get("title") or "Unknown title",
+                    "uploader": entry.get("uploader") or entry.get("channel") or "Unknown",
+                    "duration": entry.get("duration"),
+                    "url": webpage_url,
+                }
+            )
+
+        return normalized_results
+
+    def search_videos(self, search_query: str, limit: int = 10) -> list[dict[str, Any]]:
+        """
+        Search YouTube videos using yt-dlp search syntax.
+
+        Args:
+            search_query: Human-readable search query text
+            limit: Maximum number of results to fetch
+
+        Returns:
+            List of normalized search results
+
+        Raises:
+            ValueError: If query or limit are invalid
+            DownloadError: If yt-dlp search fails
+        """
+        if not search_query or not search_query.strip():
+            raise ValueError("Search query cannot be empty")
+
+        if limit < 1:
+            raise ValueError("Search limit must be at least 1")
+
+        query = f"ytsearch{limit}:{search_query.strip()}"
+        options = {
+            "quiet": not self.verbose,
+            "no_warnings": not self.verbose,
+            "extract_flat": False,
+            "ignoreerrors": True,
+        }
+
+        try:
+            with yt_dlp.YoutubeDL(options) as ydl:
+                info = ydl.extract_info(query, download=False)
+
+                if not info:
+                    return []
+
+                entries = info.get("entries")
+                return self.parse_search_results(entries)
+
+        except yt_dlp.utils.DownloadError as e:
+            raise DownloadError(f"Search failed: {e}")
+        except Exception as e:
+            if isinstance(e, (DownloadError, ValueError)):
+                raise
+            raise UnexpectedError(f"Unexpected error during search: {e}")
     
     def convert_to_mp3(self, url: str) -> Path:
         """

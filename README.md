@@ -66,8 +66,20 @@ ytconvert https://www.youtube.com/watch?v=VIDEO_ID -f mp3 -o ./downloads
 # Get video info only (no download)
 ytconvert https://www.youtube.com/watch?v=VIDEO_ID --info
 
+# Search YouTube and download selected result (interactive)
+ytconvert search "lofi hip hop"
+
+# Search and download selected result as MP3
+ytconvert search "chill beats" --audio
+
+# Search and download selected result as MP4
+ytconvert search "chill beats" --video
+
 # Show help
 ytconvert --help
+
+# Show search command help
+ytconvert search --help
 ```
 
 **Short options:**
@@ -79,6 +91,76 @@ ytconvert --help
 | --info    | -i    | Info only           |
 | --verbose | -v    | Debug mode          |
 | --version | -V    | Show version        |
+
+Search options:
+
+| Long      | Description                              |
+|-----------|------------------------------------------|
+| --limit   | Number of search results (default: 10)   |
+| --audio   | Download selected search result as MP3   |
+| --video   | Download selected search result as MP4   |
+
+---
+
+## Search YouTube from the CLI
+
+You can search YouTube directly in the terminal and choose what to download.
+
+```bash
+ytconvert search "lofi hip hop"
+```
+
+The command:
+
+1. Runs a YouTube search using yt-dlp
+2. Shows a numbered list with title, channel, and duration
+3. Prompts you to select a result number
+4. Downloads the selected video through the existing download pipeline
+
+Example interaction:
+
+```text
+$ ytconvert search "lofi hip hop"
+
+[1] Lofi Hip Hop Radio - Beats to Relax/Study To
+Channel: Lofi Girl
+Duration: 3:12:00
+
+[2] Chill Lofi Mix
+Channel: Chillhop Music
+Duration: 1:45:10
+
+Select video number: 2
+```
+
+Audio/video examples:
+
+```bash
+ytconvert search "chill beats" --audio
+ytconvert search "chill beats" --video
+ytconvert search "study music" --limit 5
+```
+
+---
+
+## Examples
+
+```bash
+# Convert URL to MP3
+ytconvert https://www.youtube.com/watch?v=VIDEO_ID
+
+# Convert URL to MP4 at 720p
+ytconvert https://www.youtube.com/watch?v=VIDEO_ID --format mp4 --quality 720p
+
+# Search and download interactively
+ytconvert search "lofi hip hop"
+
+# Search and download selected result as MP3
+ytconvert search "chill beats" --audio
+
+# Search and download selected result as MP4
+ytconvert search "chill beats" --video
+```
 
 ---
 
