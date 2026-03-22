@@ -19,6 +19,7 @@
 
 - Convert YouTube videos to **MP3** (audio extraction)
 - Download YouTube videos as **MP4** (with quality selection)
+- **Batch download** multiple URLs from a text file (with optional parallel downloads)
 - Custom output directory support
 - Progress indicators with download speed and ETA
 - Clean error handling with specific exit codes
@@ -140,6 +141,75 @@ ytconvert search "chill beats" --audio
 ytconvert search "chill beats" --video
 ytconvert search "study music" --limit 5
 ```
+
+---
+
+## Batch Download
+
+Download multiple YouTube URLs in one command by providing a text file with one URL per line.
+
+### File format (`urls.txt`)
+
+```
+https://www.youtube.com/watch?v=VIDEO_ID_1
+https://www.youtube.com/watch?v=VIDEO_ID_2
+https://youtu.be/VIDEO_ID_3
+```
+
+- One URL per line
+- Empty lines and whitespace are ignored
+- Invalid or non-YouTube lines are skipped with a warning
+
+### Usage
+
+```bash
+# Download all URLs as MP3 (default)
+ytconvert batch urls.txt
+
+# Download all URLs as MP3 explicitly
+ytconvert batch urls.txt --audio
+
+# Download all URLs as MP4
+ytconvert batch urls.txt --video
+
+# Download 5 at a time in parallel
+ytconvert batch urls.txt --parallel 5
+
+# Parallel audio downloads to a custom directory
+ytconvert batch urls.txt --audio --parallel 3 --output ./downloads
+```
+
+### Example output
+
+```text
+[1/3] Downloading: https://www.youtube.com/watch?v=VIDEO_ID_1
+[2/3] Downloading: https://www.youtube.com/watch?v=VIDEO_ID_2
+[3/3] Downloading: https://www.youtube.com/watch?v=VIDEO_ID_3
+
+✓ All downloads completed. Completed: 3 succeeded, 0 failed
+```
+
+If any download fails, the rest continue and a summary is shown:
+
+```text
+⚠ Completed: 2 succeeded, 1 failed
+```
+
+### Use cases
+
+- **Archiving videos**: Save a curated list of videos before they disappear
+- **Bulk audio downloads**: Extract MP3s from a playlist you've exported manually
+- **Downloading playlists manually**: Paste playlist URLs one per line and batch download
+
+### Batch options
+
+| Option        | Description                              |
+|---------------|------------------------------------------|
+| `--audio`     | Download all URLs as MP3                 |
+| `--video`     | Download all URLs as MP4                 |
+| `--parallel N`| Download N URLs concurrently (default 1) |
+| `--output`    | Output directory for all downloads       |
+| `--verbose`   | Show verbose yt-dlp output               |
 
 ---
 

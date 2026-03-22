@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import sys
+import threading
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Optional
 
@@ -27,7 +29,7 @@ from ytconvert.utils import (
     print_warning,
     setup_logging,
 )
-from ytconvert.validators import VALID_FORMATS, VALID_QUALITIES
+from ytconvert.validators import VALID_FORMATS, VALID_QUALITIES, validate_youtube_url
 
 app = typer.Typer(
     add_completion=False,
@@ -37,7 +39,7 @@ app = typer.Typer(
 
 CANCELLED_MESSAGE = "Operation cancelled by user"
 SEARCH_USAGE_HINT = "Please provide a search query. Example: ytconvert search \"lofi hip hop\""
-KNOWN_SUBCOMMANDS = {"convert", "search"}
+KNOWN_SUBCOMMANDS = {"convert", "search", "batch"}
 
 OutputOption = Annotated[
     Optional[Path],
@@ -271,6 +273,127 @@ def search_command(
             quality="best",
         )
         _print_conversion_success(output_path)
+        raise typer.Exit(code=ExitCode.SUCCESS)
+
+    _run_command(verbose=verbose, action=action)
+
+
+def _parse_urls_from_file(file_path: Path) -> list[str]:
+    """Read YouTube URLs from a text file, skipping blank lines and invalid URLs."""
+    try:
+        with open(file_path) as f:
+            lines = [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    urls: list[str] = []
+    for line in lines:
+        try:
+            validate_youtube_url(line)
+            urls.append(line)
+        except InvalidURLError:
+            print_warning(f"Skipping invalid URL: {line}")
+
+    return urls
+
+
+def _download_with_progress(
+    converter: YouTubeConverter,
+    url: str,
+    idx: int,
+    total: int,
+    format_type: str,
+    quality: str,
+    lock: threading.Lock,
+) -> bool:
+    """Download a single URL with progress output. Returns True on success."""
+    with lock:
+        print_info(f"[{idx}/{total}] Downloading: {url}")
+    try:
+        converter.convert(url=url, format_type=format_type, quality=quality)
+        return True
+    except Exception as e:
+        with lock:
+            print_error(f"[{idx}/{total}] Failed: {url} — {e}")
+        return False
+
+
+@app.command("batch", help="Download multiple URLs from a file")
+def batch_command(
+    file_path: Annotated[
+        str,
+        typer.Argument(help="Path to a text file with one YouTube URL per line", metavar="FILE"),
+    ],
+    audio: Annotated[
+        bool,
+        typer.Option("--audio", help="Download as MP3"),
+    ] = False,
+    video: Annotated[
+        bool,
+        typer.Option("--video", help="Download as MP4"),
+    ] = False,
+    parallel: Annotated[
+        int,
+        typer.Option("--parallel", help="Number of parallel downloads", min=1),
+    ] = 1,
+    output: OutputOption = None,
+    verbose: VerboseOption = False,
+) -> None:
+    """Download multiple YouTube URLs listed in a text file.
+
+    Usage:
+    ytconvert batch <file_path> [options]
+    """
+    if audio and video:
+        print_error("Use either --audio or --video, not both")
+        raise typer.Exit(code=ExitCode.INVALID_URL)
+
+    def action() -> None:
+        path = Path(file_path)
+        try:
+            urls = _parse_urls_from_file(path)
+        except FileNotFoundError as e:
+            print_error(str(e))
+            raise typer.Exit(code=ExitCode.DOWNLOAD_FAILURE)
+
+        if not urls:
+            print_warning("No valid URLs found in file.")
+            raise typer.Exit(code=ExitCode.INVALID_URL)
+
+        format_type = "mp4" if video else "mp3"
+        quality = "best"
+        output_dir = output or Path.cwd()
+        converter = YouTubeConverter(output_dir=output_dir, verbose=verbose)
+        total = len(urls)
+        lock = threading.Lock()
+
+        if parallel > 1:
+            with ThreadPoolExecutor(max_workers=parallel) as executor:
+                futures = [
+                    executor.submit(
+                        _download_with_progress,
+                        converter, url, i, total, format_type, quality, lock,
+                    )
+                    for i, url in enumerate(urls, 1)
+                ]
+                results = [f.result() for f in as_completed(futures)]
+        else:
+            results = [
+                _download_with_progress(converter, url, i, total, format_type, quality, lock)
+                for i, url in enumerate(urls, 1)
+            ]
+
+        succeeded = sum(results)
+        failed = total - succeeded
+
+        print()
+        if failed == 0:
+            print_success(f"All downloads completed. Completed: {succeeded} succeeded, {failed} failed")
+        else:
+            print_warning(f"Completed: {succeeded} succeeded, {failed} failed")
+
+        if failed > 0:
+            raise typer.Exit(code=ExitCode.DOWNLOAD_FAILURE)
         raise typer.Exit(code=ExitCode.SUCCESS)
 
     _run_command(verbose=verbose, action=action)
